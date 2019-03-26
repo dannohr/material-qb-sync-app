@@ -1,0 +1,19 @@
+.Dashboard {
+  background-color: #41d115;
+  border-color: #c520b7;
+  border-style: solid;
+
+  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: rgb(29, 26, 26);
+  text-align: center;
+}
+
+.RedTile {
+  color: red;
+}
