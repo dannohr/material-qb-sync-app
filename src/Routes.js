@@ -5,7 +5,7 @@ import AppliedRoute from "./components/AppliedRoute";
 import NotFound from "./containers/NotFound/NotFound";
 import Login from "./components/Login/Login";
 // import Signup from "./containers/Signup/Signup";
-// import AllUsers from "./containers/Users/AllUsers/AllUsers";
+import AllUsers from "./containers/Users/AllUsers/AllUsers";
 // import EditUser from "./containers/Users/EditUser/EditUser";
 import QBLogin from "./containers/QBLogin/QBLogin";
 import QBCustomers from "./containers/QB/QBCustomers/QBCustomers";
@@ -63,13 +63,13 @@ export default ({ childProps }) => (
       component={ViewCustomer}
       props={childProps}
     />
-    {/*<AuthenticatedRoute
-      path="/user/all"
+    <AuthenticatedRoute
+      path="/user"
       exact
       component={AllUsers}
       props={childProps}
     />
-    <AuthenticatedRoute
+    {/*<AuthenticatedRoute
       path="/user/:userId"
       exact
       component={EditUser}

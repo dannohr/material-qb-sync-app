@@ -21,6 +21,7 @@ import AccountToolbar from "../AccountToolbar/AccountToolbar";
 import VendorMenuList from "./VendorMenuList";
 import CustomerMenuList from "./CustomerMenuList";
 import QBMenuList from "./QBMenuList";
+import UserMenuList from "./UserMenuList";
 import Routes from "../../Routes";
 const drawerWidth = 240;
 
@@ -145,7 +146,8 @@ function NavDrawer(props) {
         <CustomerMenuList />
         <Divider />
         <VendorMenuList />
-
+        <Divider />
+        <UserMenuList />
         <Divider />
         <List>
           {["Company", "Customers", "Vendors", "Accounts"].map(

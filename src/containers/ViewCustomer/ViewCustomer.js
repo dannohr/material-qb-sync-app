@@ -6,6 +6,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import EntityForm from "../../components/EntityForm/EntityForm";
+import UserForm from "../../components/UserForm/UserForm";
 
 const styles = theme => ({
   appBar: {
@@ -25,13 +26,14 @@ class ViewCustomer extends Component {
 
   componentDidMount() {
     const { customerId } = this.props.match.params;
-    let customerDetail = this.props.dispatch(
-      customerActions.getCustomer(customerId)
-    );
-    console.log(customerDetail);
+    // let customerDetail = this.props.dispatch(
+    //   customerActions.getCustomer(customerId)
+    // );
+    this.props.dispatch(customerActions.getCustomer(customerId));
   }
 
   render() {
+    // console.log(this.props);
     let name =
       !this.props.isLoading && this.props.customer
         ? this.props.customer.CustomerName
@@ -48,9 +50,17 @@ class ViewCustomer extends Component {
             </Typography>
           </Toolbar>
         </AppBar>
-        {name}
+        {/* {name} */}
+
+        {/* {this.props.customer.CustomerName ? ( */}
+        <UserForm
+          customer={this.props.customer}
+          user={{ email: "email@email.com" }}
+        />
 
         <EntityForm entity={name} />
+
+        {/* ) : null} */}
       </div>
     );
   }

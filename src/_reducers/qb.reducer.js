@@ -4,7 +4,8 @@ const initialState = {
   isLoading: false,
   qbConnected: false,
   companyData: {},
-  customers: { isLoading: true }
+  customers: { isLoading: true, Customer: [] },
+  syncStatus: { syncing: false, onNumber: 0, totalNumber: 0 }
 };
 
 export function qb(state = initialState, action) {
@@ -72,7 +73,6 @@ export function qb(state = initialState, action) {
       };
 
     case qbConstants.GETALLCUSTOMERS_SUCCESS:
-      console.log(action);
       return {
         ...state,
         isLoading: false,
@@ -103,6 +103,39 @@ export function qb(state = initialState, action) {
       };
 
     case qbConstants.GETONECUSTOMERS_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        qbConnected: false,
+        customers: null
+      };
+
+    case qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST:
+      return {
+        ...state,
+        isLoading: true
+      };
+
+    case qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_STATUS:
+      console.log(action);
+      return {
+        ...state,
+        syncStatus: {
+          onNumber: action.on, //action.data.onNumber,
+          totalNumber: action.of //action.data.totalNumber
+        },
+        isLoading: true
+      };
+
+    case qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        qbConnected: true,
+        stuff: action.data
+      };
+
+    case qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE:
       return {
         ...state,
         isLoading: false,

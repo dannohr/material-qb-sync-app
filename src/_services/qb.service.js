@@ -8,7 +8,8 @@ export const qbService = {
   postQBquery,
   copyQBdataToDB,
   getCustomers,
-  getCustomer
+  getCustomer,
+  copyQBCustomerAndAddressToDB
 };
 
 function login() {
@@ -131,24 +132,56 @@ function postQBquery(queryString) {
 }
 
 function copyQBdataToDB(bodyArr, qbTable) {
-  //bodyArr is an array of the quickbooks data to copy
-  //qbTable is the Quickbooks table, i.e. Customer, Vendor, etc.
+  if (bodyArr == null || qbTable == null) {
+    // when adding addresses, there may or may not be shipping and billing
+    // addresses.  There's probably a cleaner way to do this, but for now I'm
+    // just returning an empty promise instead of the Axios promise if there's
+    // no address.
 
-  console.log("Copying ", bodyArr, " from Quickbooks ", qbTable);
-
-  bodyArr.forEach(arr => {
-    console.log(arr);
+    return Promise.resolve({ response: { data: null } });
+  } else {
     return axios
-      .post("/api/" + qbTable, arr, {
+      .post("/api/" + qbTable, bodyArr, {
+        headers: authHeader()
+      })
+      .then(response => {
+        // console.log(response.data);
+        return { data: response.data };
+      })
+      .catch(err => {
+        console.log(err);
+        // return res.json(err);
+      });
+  }
+}
+
+async function copyQBCustomerAndAddressToDB(bodyArr) {
+  console.log("Copying ", bodyArr, " from Quickbooks Customer");
+  let responseData = [];
+  // bodyArr.forEach(arr => {
+
+  for (const arr of bodyArr) {
+    console.log(
+      arr.BillingAddress ? "Has a billing address" : "Does not have one"
+    );
+    console.log(
+      arr.ShippingAddress ? "Has a billing address" : "Does not have one"
+    );
+    console.log(arr);
+    // return axios
+    await axios
+      .post("/api/customer", arr, {
         headers: authHeader()
       })
       .then(response => {
         console.log(response.data);
+        responseData.push(response.data);
         return { data: response.data };
       })
       .catch(err => {
-        // console.log(err);
+        console.log(err);
         // return res.json(err);
       });
-  });
+  }
+  console.log(responseData);
 }

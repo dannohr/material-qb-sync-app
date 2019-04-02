@@ -10,7 +10,9 @@ export const qbActions = {
   getCompany,
   getCustomer,
   getAllCustomers,
-  postAllCustomersToDB // copy all Quickbooks customers to local db
+  postAllCustomersToDB, // copy all Quickbooks customers to local db
+  postQbAddressToDB,
+  copyQBCustomerAndAddressToDB
 };
 
 function login() {
@@ -140,17 +142,121 @@ function getCustomer(id) {
   };
 }
 
-function postAllCustomersToDB(config) {
+function postAllCustomersToDB(bodyArr, qbTable) {
   return dispatch => {
     dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
 
+    return qbService.copyQBdataToDB(bodyArr, qbTable).then(
+      response => {
+        dispatch(
+          success(
+            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
+            response.QueryResponse
+          )
+        );
+      },
+
+      error => {
+        dispatch(
+          failure(
+            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
+            error
+          )
+        );
+        dispatch(alertActions.error(error));
+      }
+    );
+  };
+}
+
+function copyQBCustomerAndAddressToDB(bodyArr) {
+  console.log(bodyArr.BillAddr);
+
+  return dispatch => {
+    dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
+
+    let billAddr = bodyArr.BillAddr
+      ? {
+          name: null,
+          addressLine1: bodyArr.BillAddr.Line1,
+          city: bodyArr.BillAddr.City,
+          state: bodyArr.BillAddr.CountrySubDivisionCode,
+          zip: bodyArr.BillAddr.PostalCode,
+          qbId: bodyArr.BillAddr.Id
+        }
+      : {};
+
+    let shipAddr = bodyArr.ShipAddr
+      ? {
+          name: null,
+          addressLine1: bodyArr.ShipAddr.Line1,
+          city: bodyArr.ShipAddr.City,
+          state: bodyArr.ShipAddr.CountrySubDivisionCode,
+          zip: bodyArr.ShipAddr.PostalCode,
+          qbId: bodyArr.ShipAddr.Id
+        }
+      : null;
+
+    // first add the billing address
+    // until I find a more elegant way, for now we're just going to try to add
+    // both a billing and shipping address everytime, regardless of if there
+    // actally is one.   qbService.copyQBdataToDB will return an empty promise
+    // is there isn't an address.
+    return qbService.copyQBdataToDB(billAddr, "address").then(
+      response => {
+        let billAddrId = response.data ? response.data.id : null;
+
+        //Then add the shipping address
+        qbService.copyQBdataToDB(shipAddr, "address").then(response => {
+          console.log(response);
+          let shipAddrId = response.data ? response.data.id : null;
+
+          //then add the customer, using the above two ID's
+          let customer = {
+            qbId: bodyArr.Id,
+            Active: bodyArr.Active,
+            Balance: bodyArr.Balance,
+            CustomerName: bodyArr.DisplayName,
+            SyncToken: bodyArr.SyncToken,
+            ShippingAddressId: shipAddrId,
+            BillingAddressId: billAddrId
+          };
+
+          qbService.copyQBdataToDB(customer, "customer").then(response => {
+            dispatch(
+              success(
+                { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
+                response.data
+              )
+            );
+          });
+        });
+      },
+
+      error => {
+        dispatch(
+          failure(
+            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
+            error
+          )
+        );
+        dispatch(alertActions.error(error));
+      }
+    );
+  };
+}
+
+function postQbAddressToDB(config) {
+  return dispatch => {
+    dispatch(request({ type: qbConstants.POST_QB_ADDRESS_TO_DB_REQUEST }));
+
     axios
-      .post("/api/addCustomer", config)
+      .post("/api/address", config)
       .then(response => {
         if (response) {
           dispatch(
             success(
-              { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
+              { type: qbConstants.POST_QB_ADDRESS_TO_DB_SUCCESS },
               response.data.QueryResponse
             )
           );
@@ -158,7 +264,7 @@ function postAllCustomersToDB(config) {
           console.log("failing");
           dispatch(
             failure(
-              { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
+              { type: qbConstants.POST_QB_ADDRESS_TO_DB_FAILURE },
               "not working"
             )
           );
@@ -166,10 +272,7 @@ function postAllCustomersToDB(config) {
       })
       .catch(error => {
         dispatch(
-          failure(
-            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
-            error
-          )
+          failure({ type: qbConstants.POST_QB_ADDRESS_TO_DB_FAILURE }, error)
         );
         dispatch(
           alertActions.error({

@@ -3,11 +3,14 @@ import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Paper from "@material-ui/core/Paper";
-import Button from "@material-ui/core/Button";
+// import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import AddressForm from "./AddressForm";
+
+// Set default so there will always be a value
+// const { user = {} } = this.props;
 
 const styles = theme => ({
   layout: {
@@ -52,7 +55,7 @@ const styles = theme => ({
 class EntityForm extends React.Component {
   render() {
     const { classes } = this.props;
-    console.log(this.props);
+    // console.log(this.props);
 
     return (
       <React.Fragment>

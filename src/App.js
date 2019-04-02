@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import { connect } from "react-redux";
 import { authActions } from "./_actions/auth.actions";
-import { qbActions } from "./_actions/qb.actions";
+// import { qbActions } from "./_actions/qb.actions";
 import "./App.css";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -48,7 +48,7 @@ class App extends Component {
       // });
     } else {
       this.props.dispatch(authActions.getMe());
-      this.props.dispatch(qbActions.getCompany());
+      // this.props.dispatch(qbActions.getCompany());
     }
   }
 

@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { connect } from "react-redux";
 import { qbActions } from "../../../_actions";
-import { qbService } from "../../../_services";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
@@ -50,19 +49,23 @@ class QBCustomers extends Component {
     console.log(allCustomers);
 
     //build an array with only the fields we're going to copy over
-    let allCustomerBody = [];
+    // let allCustomerBody = [];
 
-    allCustomers.forEach(customer => {
-      allCustomerBody.push({
-        qbId: customer.Id,
-        Active: customer.Active,
-        Balance: customer.Balance,
-        CustomerName: customer.DisplayName,
-        SyncToken: customer.SyncToken
-      });
-    });
+    // allCustomers.forEach(customer => {
+    //   allCustomerBody.push({
+    //     qbId: customer.Id,
+    //     Active: customer.Active,
+    //     Balance: customer.Balance,
+    //     CustomerName: customer.DisplayName,
+    //     SyncToken: customer.SyncToken,
+    //     BillingAddress: customer.BillAddr,
+    //     ShippingAdress: customer.ShipAddr
+    //   });
+    // });
 
-    qbService.copyQBdataToDB(allCustomerBody, "customer");
+    for (let customer of allCustomers) {
+      this.props.dispatch(qbActions.copyQBCustomerAndAddressToDB(customer));
+    }
   }
 
   createTableHeader() {
@@ -137,7 +140,7 @@ class QBCustomers extends Component {
       </Box>
     );
 
-    let table = this.props.customers.Customer ? (
+    let table = this.props.customers ? (
       <CustomerTable
         columns={this.createTableHeader()}
         data={this.createTableRows(this.props.customers.Customer)}

@@ -3,7 +3,7 @@ import { customerConstants } from "../_constants";
 const initialState = {
   isLoading: false,
   customers: [],
-  customer: null
+  customer: { CustomerName: "", id: "", updatedAt: "", active: "" }
 };
 
 export function customer(state = initialState, action) {
