@@ -1,7 +1,6 @@
 import { qbConstants } from "../_constants";
 import { qbService } from "../_services";
 import { alertActions } from "./";
-import axios from "axios";
 
 export const qbActions = {
   login, //log in new user
@@ -10,9 +9,7 @@ export const qbActions = {
   getCompany,
   getCustomer,
   getAllCustomers,
-  postAllCustomersToDB, // copy all Quickbooks customers to local db
-  postQbAddressToDB,
-  copyQBCustomerAndAddressToDB
+  postAllCustomersToDB // copy all Quickbooks customers to local db
 };
 
 function login() {
@@ -97,8 +94,8 @@ function getAllCustomers() {
 
     return qbService.getCustomers().then(
       data => {
-        console.log("date from getCustomers action");
-        console.log(data);
+        // console.log("data from getCustomers action");
+        // console.log(data);
         if (!data.error) {
           dispatch(
             // console.log({ type: qbConstants.GETALLCUSTOMERS_SUCCESS }, data),
@@ -142,21 +139,24 @@ function getCustomer(id) {
   };
 }
 
-function postAllCustomersToDB(bodyArr, qbTable) {
+function postAllCustomersToDB(bodyArr) {
   return dispatch => {
     dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
 
-    return qbService.copyQBdataToDB(bodyArr, qbTable).then(
+    return qbService.copyQBCustomerAndAddressToDB(bodyArr).then(
+      // return qbService.testFunc(bodyArr).then(
       response => {
+        console.log(response);
         dispatch(
           success(
-            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
-            response.QueryResponse
+            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS }
+            //response.QueryResponse
           )
         );
       },
 
       error => {
+        console.log(error);
         dispatch(
           failure(
             { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
@@ -169,116 +169,132 @@ function postAllCustomersToDB(bodyArr, qbTable) {
   };
 }
 
-function copyQBCustomerAndAddressToDB(bodyArr) {
-  console.log(bodyArr.BillAddr);
+// function copyQBCustomerAndAddressToDB(bodyArr) {
+//   return dispatch => {
+//     dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
 
-  return dispatch => {
-    dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
+//     // first add the billing address
+//     // until I find a more elegant way, for now we're just going to try to add
+//     // both a billing and shipping address everytime, regardless of if there
+//     // actally is one.   qbService.copyQBdataToDB will return an empty promise
+//     // is there isn't an address.
 
-    let billAddr = bodyArr.BillAddr
-      ? {
-          name: null,
-          addressLine1: bodyArr.BillAddr.Line1,
-          city: bodyArr.BillAddr.City,
-          state: bodyArr.BillAddr.CountrySubDivisionCode,
-          zip: bodyArr.BillAddr.PostalCode,
-          qbId: bodyArr.BillAddr.Id
-        }
-      : {};
+//     //go through each client to get current background list
+//     return Promise.all(
+//       bodyArr.map(function(currCustomer) {
+//         console.log("ADDING NEW CUSTOMER", currCustomer);
 
-    let shipAddr = bodyArr.ShipAddr
-      ? {
-          name: null,
-          addressLine1: bodyArr.ShipAddr.Line1,
-          city: bodyArr.ShipAddr.City,
-          state: bodyArr.ShipAddr.CountrySubDivisionCode,
-          zip: bodyArr.ShipAddr.PostalCode,
-          qbId: bodyArr.ShipAddr.Id
-        }
-      : null;
+//         let billAddr = currCustomer.BillAddr
+//           ? {
+//               name: null,
+//               addressLine1: currCustomer.BillAddr.Line1,
+//               city: currCustomer.BillAddr.City,
+//               state: currCustomer.BillAddr.CountrySubDivisionCode,
+//               zip: currCustomer.BillAddr.PostalCode,
+//               qbId: currCustomer.BillAddr.Id
+//             }
+//           : {};
 
-    // first add the billing address
-    // until I find a more elegant way, for now we're just going to try to add
-    // both a billing and shipping address everytime, regardless of if there
-    // actally is one.   qbService.copyQBdataToDB will return an empty promise
-    // is there isn't an address.
-    return qbService.copyQBdataToDB(billAddr, "address").then(
-      response => {
-        let billAddrId = response.data ? response.data.id : null;
+//         let shipAddr = currCustomer.ShipAddr
+//           ? {
+//               name: null,
+//               addressLine1: currCustomer.ShipAddr.Line1,
+//               city: currCustomer.ShipAddr.City,
+//               state: currCustomer.ShipAddr.CountrySubDivisionCode,
+//               zip: currCustomer.ShipAddr.PostalCode,
+//               qbId: currCustomer.ShipAddr.Id
+//             }
+//           : null;
 
-        //Then add the shipping address
-        qbService.copyQBdataToDB(shipAddr, "address").then(response => {
-          console.log(response);
-          let shipAddrId = response.data ? response.data.id : null;
+//         return qbService.copyQBdataToDB(billAddr, "address").then(
+//           response => {
+//             let billAddrId = response.data ? response.data.id : null;
 
-          //then add the customer, using the above two ID's
-          let customer = {
-            qbId: bodyArr.Id,
-            Active: bodyArr.Active,
-            Balance: bodyArr.Balance,
-            CustomerName: bodyArr.DisplayName,
-            SyncToken: bodyArr.SyncToken,
-            ShippingAddressId: shipAddrId,
-            BillingAddressId: billAddrId
-          };
+//             //Then add the shipping address
+//             qbService.copyQBdataToDB(shipAddr, "address").then(response => {
+//               console.log(response);
+//               let shipAddrId = response.data ? response.data.id : null;
 
-          qbService.copyQBdataToDB(customer, "customer").then(response => {
-            dispatch(
-              success(
-                { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
-                response.data
-              )
-            );
-          });
-        });
-      },
+//               //then add the customer, using the above two ID's
+//               let customer = {
+//                 qbId: currCustomer.Id,
+//                 Active: currCustomer.Active,
+//                 Balance: currCustomer.Balance,
+//                 CustomerName: currCustomer.DisplayName,
+//                 SyncToken: currCustomer.SyncToken,
+//                 ShippingAddressId: shipAddrId,
+//                 BillingAddressId: billAddrId
+//               };
 
-      error => {
-        dispatch(
-          failure(
-            { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
-            error
-          )
-        );
-        dispatch(alertActions.error(error));
-      }
-    );
-  };
-}
+//               qbService.copyQBdataToDB(customer, "customer").then(response => {
+//                 dispatch(
+//                   success(
+//                     { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_SUCCESS },
+//                     response.data
+//                   )
+//                 );
+//               });
+//             });
+//           },
 
-function postQbAddressToDB(config) {
-  return dispatch => {
-    dispatch(request({ type: qbConstants.POST_QB_ADDRESS_TO_DB_REQUEST }));
+//           error => {
+//             dispatch(
+//               failure(
+//                 { type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE },
+//                 error
+//               )
+//             );
+//             dispatch(alertActions.error(error));
+//           }
+//         );
+//       })
+//     ).finally(console.log("all done"));
+//   };
+// }
 
-    axios
-      .post("/api/address", config)
-      .then(response => {
-        if (response) {
-          dispatch(
-            success(
-              { type: qbConstants.POST_QB_ADDRESS_TO_DB_SUCCESS },
-              response.data.QueryResponse
-            )
-          );
-        } else {
-          console.log("failing");
-          dispatch(
-            failure(
-              { type: qbConstants.POST_QB_ADDRESS_TO_DB_FAILURE },
-              "not working"
-            )
-          );
-        }
-      })
-      .catch(error => {
-        dispatch(
-          failure({ type: qbConstants.POST_QB_ADDRESS_TO_DB_FAILURE }, error)
-        );
-        dispatch(
-          alertActions.error({
-            error: error
-          })
-        );
-      });
-  };
-}
+// function copyQBAllCustomerAndAddressToDB(currCustomer) {
+//   return dispatch => {
+//     dispatch(request({ type: qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_REQUEST }));
+
+//     // bodyArr.map(function(currCustomer, index) {
+//     // console.log(currCustomer);
+//     // let promises = [];
+
+//     // if (currCustomer.hasOwnProperty("BillAddr")) {
+//     let billAddr = {
+//       name: null,
+//       addressLine1: currCustomer.BillAddr.Line1,
+//       city: currCustomer.BillAddr.City,
+//       state: currCustomer.BillAddr.CountrySubDivisionCode,
+//       zip: currCustomer.BillAddr.PostalCode,
+//       qbId: currCustomer.BillAddr.Id
+//     };
+//     console.log("Adding Billing ", billAddr);
+//     // let billAddrPromise = addAddress(billAddr);
+
+//     // promises.push(billAddrPromise);
+//     // }
+
+//     // if (currCustomer.hasOwnProperty("ShipAddr")) {
+//     let shipAddr = {
+//       name: null,
+//       addressLine1: currCustomer.ShipAddr.Line1,
+//       city: currCustomer.ShipAddr.City,
+//       state: currCustomer.ShipAddr.CountrySubDivisionCode,
+//       zip: currCustomer.ShipAddr.PostalCode,
+//       qbId: currCustomer.ShipAddr.Id
+//     };
+//     console.log("Adding Shipping ", shipAddr);
+//     // let shipAddrPromise = addAddress(shipAddr);
+//     // return shipAddr
+//     // promises.push(shipAddrPromise);
+//     // }
+//     return pleaseworkthistime(shipAddr, billAddr);
+//     // return Promise.all([loadData(shipAddr), loadData(billAddr)]).then(data => {
+//     //   console.log("all done");
+//     //   console.log(data);
+//     //   return data;
+//     // });
+//     // });
+//   };
+// }

@@ -33,9 +33,9 @@ class App extends Component {
   async componentWillMount() {
     // this is checking to see is a user is already logged in
     const accessString = localStorage.getItem("JWT");
-    const companyId = localStorage.getItem("companyId");
+    // const companyId = localStorage.getItem("companyId");
 
-    console.log("attempting to login to company ", companyId);
+    // console.log("attempting to login to company ", companyId);
 
     if (accessString == null) {
       console.log("accessString is null");

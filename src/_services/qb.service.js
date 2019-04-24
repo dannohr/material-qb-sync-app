@@ -9,7 +9,8 @@ export const qbService = {
   copyQBdataToDB,
   getCustomers,
   getCustomer,
-  copyQBCustomerAndAddressToDB
+  copyQBCustomerAndAddressToDB,
+  testFunc
 };
 
 function login() {
@@ -131,7 +132,8 @@ function postQBquery(queryString) {
     });
 }
 
-function copyQBdataToDB(bodyArr, qbTable) {
+async function copyQBdataToDB(bodyArr, qbTable) {
+  console.log(bodyArr);
   if (bodyArr == null || qbTable == null) {
     // when adding addresses, there may or may not be shipping and billing
     // addresses.  There's probably a cleaner way to do this, but for now I'm
@@ -145,9 +147,11 @@ function copyQBdataToDB(bodyArr, qbTable) {
         headers: authHeader()
       })
       .then(response => {
-        // console.log(response.data);
-        return { data: response.data };
+        console.log(response.data);
+
+        return response.data; //{ data: response.data };
       })
+
       .catch(err => {
         console.log(err);
         // return res.json(err);
@@ -157,31 +161,79 @@ function copyQBdataToDB(bodyArr, qbTable) {
 
 async function copyQBCustomerAndAddressToDB(bodyArr) {
   console.log("Copying ", bodyArr, " from Quickbooks Customer");
-  let responseData = [];
-  // bodyArr.forEach(arr => {
 
-  for (const arr of bodyArr) {
-    console.log(
-      arr.BillingAddress ? "Has a billing address" : "Does not have one"
-    );
-    console.log(
-      arr.ShippingAddress ? "Has a billing address" : "Does not have one"
-    );
-    console.log(arr);
-    // return axios
-    await axios
-      .post("/api/customer", arr, {
-        headers: authHeader()
-      })
-      .then(response => {
-        console.log(response.data);
-        responseData.push(response.data);
-        return { data: response.data };
-      })
-      .catch(err => {
-        console.log(err);
-        // return res.json(err);
-      });
-  }
-  console.log(responseData);
+  let billAddr = {
+    name: null,
+    addressLine1: bodyArr.BillAddr.Line1,
+    city: bodyArr.BillAddr.City,
+    state: bodyArr.BillAddr.CountrySubDivisionCode,
+    zip: bodyArr.BillAddr.PostalCode,
+    qbId: bodyArr.BillAddr.Id
+  };
+
+  let billAddrPromise = copyQBdataToDB(billAddr, "Address");
+
+  let shipAddr = {
+    name: null,
+    addressLine1: bodyArr.ShipAddr.Line1,
+    city: bodyArr.ShipAddr.City,
+    state: bodyArr.ShipAddr.CountrySubDivisionCode,
+    zip: bodyArr.ShipAddr.PostalCode,
+    qbId: bodyArr.ShipAddr.Id
+  };
+
+  let shipAddrPromise = copyQBdataToDB(shipAddr, "Address");
+
+  var result1 = await getGenres1();
+  console.log("Woo ONE done!", result1);
+
+  var result2 = await getGenres2();
+  console.log("Woo TWO done!", result2);
+
+  var result3 = await getGenres3();
+  console.log("Woo THREE done!", result3);
+
+  var newBillAddr = await billAddrPromise;
+  console.log("New Bill Address Created", newBillAddr);
+
+  var newShipAddr = await shipAddrPromise;
+  console.log("New Bill Address Created", newShipAddr);
+
+  return { result1, result2, result3, newBillAddr, newShipAddr, bodyArr };
+}
+
+var getGenres1 = function() {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(["comedy", "drama", "action"]);
+    }, 1000);
+  });
+};
+var getGenres2 = function() {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(["sports", "news", "movies"]);
+    }, 2000);
+  });
+};
+var getGenres3 = function() {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      resolve(["apples", "oranges", "peaches"]);
+    }, 3000);
+  });
+};
+
+// We start an 'async' function to use the 'await' keyword
+async function testFunc(bodyArr) {
+  var result1 = await getGenres1();
+  console.log("Woo ONE done!", result1);
+
+  var result2 = await getGenres2();
+  console.log("Woo TWO done!", result2);
+
+  var result3 = await getGenres3();
+  console.log("Woo THREE done!", result3);
+
+  return { result1, result2, result3, bodyArr };
 }

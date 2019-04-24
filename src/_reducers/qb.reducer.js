@@ -5,7 +5,8 @@ const initialState = {
   qbConnected: false,
   companyData: {},
   customers: { isLoading: true, Customer: [] },
-  syncStatus: { syncing: false, onNumber: 0, totalNumber: 0 }
+  syncStatus: { syncing: false, onNumber: 0, totalNumber: 0 },
+  count: 0
 };
 
 export function qb(state = initialState, action) {
@@ -132,7 +133,8 @@ export function qb(state = initialState, action) {
         ...state,
         isLoading: false,
         qbConnected: true,
-        stuff: action.data
+        stuff: action.data,
+        count: state.count + 1
       };
 
     case qbConstants.POST_ALL_QB_CUSTOMER_TO_DB_FAILURE:

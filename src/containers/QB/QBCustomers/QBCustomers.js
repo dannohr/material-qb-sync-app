@@ -47,9 +47,12 @@ class QBCustomers extends Component {
     console.log("Copying all customers from quickbooks to local database");
     let allCustomers = this.props.customers.Customer;
     console.log(allCustomers);
+    // let numToCopy = allCustomers.length;
 
     //build an array with only the fields we're going to copy over
-    // let allCustomerBody = [];
+    let allCustomerBody = [];
+    allCustomerBody.push(allCustomers[0]);
+    // allCustomerBody.push(allCustomers[1]);
 
     // allCustomers.forEach(customer => {
     //   allCustomerBody.push({
@@ -62,10 +65,22 @@ class QBCustomers extends Component {
     //     ShippingAdress: customer.ShipAddr
     //   });
     // });
+    // console.log("There are ", numToCopy, " customers to copy");
+    // let i = 1;
+    // for (let customer of allCustomers) {
+    //   console.log("copying number ", i);
+    // this.props.dispatch(
+    //   qbActions.copyQBAllCustomerAndAddressToDB(allCustomerBody)
+    // );
+    this.props.dispatch(qbActions.postAllCustomersToDB(allCustomers[0]));
 
-    for (let customer of allCustomers) {
-      this.props.dispatch(qbActions.copyQBCustomerAndAddressToDB(customer));
-    }
+    // this.props.dispatch(qbActions.fetchData(allCustomers[0]));
+    // this.props.dispatch(
+    //   qbActions.copyQBAllCustomerAndAddressToDB(allCustomers[0])
+    // );
+
+    // i++;
+    // }
   }
 
   createTableHeader() {
