@@ -51,6 +51,7 @@ export default ({ childProps }) => (
       component={QBCustomers}
       props={childProps}
     />
+
     <AuthenticatedRoute
       path="/customer"
       exact

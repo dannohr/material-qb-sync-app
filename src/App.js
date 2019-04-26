@@ -15,21 +15,6 @@ import Nav from "./components/Nav/Nav";
 import Footer from "./components/Footer/Footer";
 
 class App extends Component {
-  // constructor(props) {
-  //   super(props);
-
-  // this.state = {
-  //   isAuthenticated: false,
-  //   isAuthenticating: true,
-  //   username: "",
-  //   companyId: null
-  // };
-  // }
-
-  // componentDidUpdate() {
-  //   console.log(props);
-  // }
-
   async componentWillMount() {
     // this is checking to see is a user is already logged in
     const accessString = localStorage.getItem("JWT");
@@ -39,16 +24,8 @@ class App extends Component {
 
     if (accessString == null) {
       console.log("accessString is null");
-      // this.setState({
-      //   isLoading: false,
-      //   error: true,
-      //   isAuthenticating: false,
-      //   companyId: null,
-      //   isAuthenticated: false
-      // });
     } else {
       this.props.dispatch(authActions.getMe());
-      // this.props.dispatch(qbActions.getCompany());
     }
   }
 

@@ -8,6 +8,7 @@ export const authService = {
 };
 
 function login(username, password) {
+  console.log("trying login");
   return axios
     .post("/api/login", {
       username,
