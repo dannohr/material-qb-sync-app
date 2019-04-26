@@ -1,5 +1,6 @@
 import axios from "axios";
 import { authHeader } from "../_helpers";
+const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT;
 
 export const authService = {
   login,
@@ -8,7 +9,10 @@ export const authService = {
 };
 
 function login(username, password) {
+  console.log(process.env);
   console.log("trying login");
+  let path = `${API_ENDPOINT}/api/login`;
+  console.log(path);
   return axios
     .post("/api/login", {
       username,
